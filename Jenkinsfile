@@ -1,5 +1,10 @@
 pipeline {
     agent any
+    parameters {
+        string(name: 'FILE_NAME', defaultValue: 'app', description: 'Имя исполняемого файла')
+        booleanParam(name: 'RUN_UNIT', defaultValue: true, description: 'Запускать unit тесты')
+        booleanParam(name: 'RUN_INTEGRATION', defaultValue: true, description: 'Запускать integration тесты')
+    }
     stages {
         stage('Print Info') {
             steps {
@@ -8,15 +13,45 @@ pipeline {
                 sh 'echo "g++ version: $(g++ --version)"'
             }
         }
-        stage('Build Executable file') {
+        stage('Build Executable File') {
             steps {
-                sh 'g++ main.cpp -o main'
+                sh "g++ app.cpp -o ${params.FILE_NAME}"
+            }
+        }
+        stage('Run Unit Tests') {
+            when {
+                expression { return params.RUN_UNIT }
+            }
+            steps {
+                sh '''
+                chmod u+x unit_tests.sh
+                ./unit_tests.sh
+                '''
+            }
+        }
+        stage('Run Integration Tests') {
+            when {
+                expression { return params.RUN_INTEGRATION }
+            }
+            steps {
+                sh '''
+                chmod u+x integration_tests.sh
+                ./integration_tests.sh
+                '''
             }
         }
         stage('Application Launch Test') {
             steps {
-                sh './main'
+                sh "./${params.FILE_NAME}"
             }
+        }
+    }
+    post {
+        success {
+            echo 'You can go home'
+        }
+        failure {
+            echo 'Sit and work on'
         }
     }
 }
