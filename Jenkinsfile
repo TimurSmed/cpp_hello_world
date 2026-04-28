@@ -47,16 +47,7 @@ pipeline {
         }
         stage('Sending an artifact to Prod') {
             steps {
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: "Prod",
-                            transfers: [
-                                sshTransfer(sourceFiles: "${params.FILE_NAME}")
-                            ]
-                        )
-                    ]
-                )
+		sh 'exit 1'
             }
         }
     }
